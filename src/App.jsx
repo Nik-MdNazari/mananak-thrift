@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.jsx';
-import ThriftStores from './pages/ThriftStores.jsx';
+import ThriftStoresList from './pages/ThriftStoresList.jsx';
 import ErrorPage from './pages/ErrorPage.jsx';
 import ThriftStore from './pages/ThriftStore.jsx';
 
@@ -9,9 +9,10 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={ <Home /> }/>
-        <Route path="/stores" element={ <ThriftStores /> }/>
-        <Route path="/*" element={ <ErrorPage /> }/>
+        <Route path="/stores" element={ <ThriftStoresList /> }/>
+        <Route path="/stores/:id" element={ <ThriftStoresList /> }/>
         <Route path="/thriftStore" element={ <ThriftStore /> }/>
+        <Route path="/*" element={ <ErrorPage /> }/>
       </Routes>
     </BrowserRouter>
   )

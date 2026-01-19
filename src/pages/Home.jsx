@@ -10,7 +10,7 @@ export default function Home() {
         light: '#e8e8e0',
         off: '#f6f4ef'
     }
-    
+
     const thriftStore1 = {
         name: "2nd Street TTDI",
         description: "A trendy thrift store with a wide selection of clothing and accessories.",
@@ -30,7 +30,6 @@ export default function Home() {
     const [search, setSearch] = useState('');
 
     return (
-        
         <div style={{ minHeight: '100vh', backgroundColor: theme.off, color: theme.dark }}>
 
             {/* Navigation Bar */}

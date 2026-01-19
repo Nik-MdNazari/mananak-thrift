@@ -1,0 +1,46 @@
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) UNIQUE,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE thrift_stores (
+    TS_id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    average_rating INTEGER DEFAULT 0 CHECK (average_rating >= 0 AND average_rating <= 5),
+    total_ratings INTEGER DEFAULT 0,  
+    price_range INTEGER CHECK (price_range >= 1 AND price_range <= 5),
+    operating_hours JSONB,
+    google_maps_link VARCHAR(1000),
+    added_by INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE thrift_stores_address (
+    TS_address_id SERIAL PRIMARY KEY,
+    TS_id INTEGER UNIQUE REFERENCES thrift_stores(TS_id) ON DELETE CASCADE,
+    unit_number VARCHAR(250),
+    address_line_1 VARCHAR(500) NOT NULL,
+    address_line_2 VARCHAR(500) NOT NULL,
+    city VARCHAR(200) NOT NULL,
+    state VARCHAR(200) NOT NULL,
+    postal_code VARCHAR(20),
+    full_address TEXT NOT NULL,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE thrift_stores_contacts (
+    TS_contact_id SERIAL PRIMARY KEY,
+    TS_id INTEGER UNIQUE REFERENCES thrift_stores(TS_id) ON DELETE CASCADE,
+    phone_number VARCHAR(50),
+    instagram_link VARCHAR(500),
+    facebook_link VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

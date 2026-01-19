@@ -49,20 +49,26 @@ export default function ThriftStoreCard({ store = {} }) {
                     {store.description || 'No description available for this thrift store.'}                    
                 </Card.Text>
 
-                <div className='my-3'>
-                    <i className='bi bi-geo-alt me-2' />{store.address || 'Address not available'}
-                    <br />
+                <div className='my-2 d-flex'>
+                    <i className='bi bi-geo-alt me-2' />
+                    <div>
+                        {store.address?.full_address || 'Address not available'}
+                    </div>
+                </div>
+                <div className='my-2'>
                     <i className='bi bi-clock me-2' />{store.openingHours || 'Opening hours not available'}
                     {store.openingHours && (
                         <Badge bg="success" className='ms-4'>Open Now</Badge>
                     )}
                 </div>
+                    
 
-                <Button variant="primary" style={{ width: '300px', backgroundColor: theme.dark }} href={store.directionLink} className='me-3'>
+
+                <Button variant="primary" style={{ width: '300px', backgroundColor: theme.dark }} href={store.google_maps_link} className='me-3'>
                     Show Direction
                 </Button>
 
-                <Button variant="secondary" onClick={() => {navigate(`/thriftStore`)}}>
+                <Button variant="secondary" onClick={() => {navigate(`/stores/${store.ts_id}`)}}>
                     View Details
                 </Button>
             </Card.Body>
