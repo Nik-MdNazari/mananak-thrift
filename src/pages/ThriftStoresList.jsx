@@ -42,7 +42,7 @@ export default function ThriftStoresList() {
     return (
         <Container className="py-4">
             <h1 className="mb-4">Thrift Stores</h1>
-            <Row>
+            <Row >
                 {stores.map((store) => (
                     <Col md={5} key={store.id} className="mb-4">
                         <ThriftStoreCard store={store} />

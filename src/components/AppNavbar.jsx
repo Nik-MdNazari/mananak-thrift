@@ -1,6 +1,6 @@
 import { Navbar, Nav, Container } from 'react-bootstrap'
 
-export default function AppNavbar({ onLoginClick, isLoggedIn }) {
+export default function AppNavbar({ onLoginClick, onLogout, isLoggedIn }) {
   const theme = {
     accent: '#c85103',
     off: '#f6f4ef',
@@ -31,24 +31,36 @@ export default function AppNavbar({ onLoginClick, isLoggedIn }) {
             </Nav.Link>
           </Nav.Item>
 
-          {/* AUTH ACTION */}
-          {!isLoggedIn ? (
+        {/* AUTH ACTION */}
+        {!isLoggedIn ? (
             <Nav.Item>
-              <Nav.Link
+                <Nav.Link
                 onClick={onLoginClick}
                 className="text-light"
                 style={{ cursor: 'pointer' }}
-              >
+                >
                 <i className="bi bi-person-circle me-1" /> Login
-              </Nav.Link>
+                </Nav.Link>
             </Nav.Item>
-          ) : (
-            <Nav.Item>
-              <Nav.Link href="/profile" className="text-light">
-                <i className="bi bi-person me-1" /> My Profile
-              </Nav.Link>
-            </Nav.Item>
-          )}
+            ) : (
+            <>
+                <Nav.Item>
+                    <Nav.Link href="/profile" className="text-light me-2">
+                        <i className="bi bi-person me-1" /> My Profile
+                    </Nav.Link>
+                    </Nav.Item>
+
+                    <Nav.Item>
+                    <Nav.Link
+                        onClick={onLogout}
+                        className="text-light"
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <i className="bi bi-box-arrow-right me-1" /> Logout
+                    </Nav.Link>
+                </Nav.Item>
+            </>
+            )}
         </Nav>
       </Container>
     </Navbar>

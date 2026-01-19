@@ -163,7 +163,7 @@ export default function ThriftStore() {
 
               {contacts.facebook_link && (
                 <p>
-                  📘{" "}
+                  {" "}
                   <a href={contacts.facebook_link} target="_blank">
                     Facebook
                   </a>
@@ -172,7 +172,7 @@ export default function ThriftStore() {
 
               {contacts.instagram_link && (
                 <p>
-                  📸{" "}
+                  {" "}
                   <a href={contacts.instagram_link} target="_blank">
                     Instagram
                   </a>

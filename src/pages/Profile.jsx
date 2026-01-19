@@ -43,7 +43,7 @@ export default function Profile() {
 
         {/* USER'S STORES */}
         <Col md={8}>
-          <Card>
+          <Card className='mb-3'>
             <Card.Body>
               <h4 className="mb-3">My Thrift Stores</h4>
 
@@ -77,6 +77,8 @@ export default function Profile() {
               )}
             </Card.Body>
           </Card>
+
+          <Button size='md' variant='secondary' className='mx-2'>Add Thrift Store</Button>
         </Col>
       </Row>
     </Container>

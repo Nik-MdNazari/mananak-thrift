@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Container, Form, Row, Col, Nav, Navbar, InputGroup, Button } from 'react-bootstrap'
 import AppNavbar from '../components/AppNavbar.jsx'
 import ThriftStoreCard from '../components/ThriftStoreCard.jsx'
+import ThriftStoresList from './ThriftStoresList.jsx'
 import Login from './Login'
 
 export default function Home() {
@@ -65,27 +66,7 @@ export default function Home() {
             </Row>
 
             {/* Featured Thrift Store Section */}
-            <Row className="align-items-center mb-3">
-                <Col>
-                <div className=''>
-                    <h2 style={{ color: theme.dark, fontWeight: 600 }}>Featured Thrift Stores</h2>
-                    <p className="text-muted" style={{ color: theme.mid, fontSize: '1.2rem' }}>Hand-picked thrift stores near you</p>
-                </div>
-                    
-                </Col>
-            </Row>
-
-            <Row>
-                <Col md={5} className="mb-4">
-                    <ThriftStoreCard store={thriftStore1}/>
-                </Col>
-                <Col md={5} className="mb-4">
-                    <ThriftStoreCard store={thriftStore2}/>
-                </Col>
-                <Col md={5} className="mb-4">
-                    <ThriftStoreCard store={thriftStore1}/>
-                </Col>
-            </Row>
+            <ThriftStoresList />
         </Container>
 
         <footer className="py-4 text-center mt-auto" style={{ backgroundColor: theme.dark, color: theme.off }}>
