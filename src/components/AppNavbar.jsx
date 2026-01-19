@@ -1,10 +1,15 @@
 import { Navbar, Nav, Container } from 'react-bootstrap'
+import { useContext } from 'react'
+import { AuthContext } from './AuthProvider'
 
-export default function AppNavbar({ onLoginClick, onLogout, isLoggedIn }) {
-  const theme = {
+export default function AppNavbar({ onLoginClick, onLogout }) {
+    const theme = {
     accent: '#c85103',
     off: '#f6f4ef',
-  }
+    }
+
+    const { currentUser } = useContext(AuthContext)
+    const isLoggedIn = !!currentUser
 
   return (
     <Navbar

@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Container, Form, Row, Col, Nav, Navbar, InputGroup, Button } from 'react-bootstrap'
 import AppNavbar from '../components/AppNavbar.jsx'
 import ThriftStoreCard from '../components/ThriftStoreCard.jsx'
 import ThriftStoresList from './ThriftStoresList.jsx'
 import Login from './Login'
+
+const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
 export default function Home() {
     const theme = {
@@ -14,23 +16,31 @@ export default function Home() {
         off: '#f6f4ef'
     }
 
-    const thriftStore1 = {
-        name: "2nd Street TTDI",
-        description: "A trendy thrift store with a wide selection of clothing and accessories.",
-        address: "2nd Street, TTDI, Kuala Lumpur",
-        openingHours: "10:00 AM - 8:00 PM",
-        img: "",
-        directionLink: "https://www.google.com/maps/dir/?api=1&destination=2nd+Street,+TTDI,+Kuala+Lumpur",
-        rating: 4,
-    }
-
-    const thriftStore2 = {
-        name: 'Jalan Jalan Japan Thrift Store',
-        description: "",
-        address: '',
-    }
-
+    const [stores, setStores] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [search, setSearch] = useState('');
+    
+    useEffect(() => {
+        async function fetchStores() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/stores`)
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch stores')
+                }
+
+                const data = await res.json()
+                setStores(data)
+            } catch (err) {
+                setError(err.message)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchStores()
+    }, [])
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: theme.off, color: theme.dark }}>
@@ -66,7 +76,13 @@ export default function Home() {
             </Row>
 
             {/* Featured Thrift Store Section */}
-            <ThriftStoresList />
+            <Row>
+                {stores.map(store => (
+                    <Col md={5} className="mb-4" key={store.id}>
+                        <ThriftStoreCard store={store} />
+                    </Col>
+                ))}
+            </Row>
         </Container>
 
         <footer className="py-4 text-center mt-auto" style={{ backgroundColor: theme.dark, color: theme.off }}>
