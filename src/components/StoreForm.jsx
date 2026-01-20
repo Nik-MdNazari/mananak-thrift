@@ -1,13 +1,49 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Form, Button, Row, Col } from 'react-bootstrap'
+
+const EMPTY_STORE = {
+  name: '',
+  description: '',
+  price_range: '',
+  google_maps_link: '',
+  operating_hours: {
+    monday: '',
+    tuesday: '',
+    wednesday: '',
+    thursday: '',
+    friday: '',
+    saturday: '',
+    sunday: ''
+  },
+  address: {
+    unit_number: '',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    postal_code: ''
+  },
+  contacts: {
+    phone_number: '',
+    instagram_link: '',
+    facebook_link: ''
+  }
+};
 
 export default function StoreForm({
   initialData,
   onSubmit,
+  isSubmitting = false,
   submitLabel = 'Save',
   loading = false
 }) {
-  const [formData, setFormData] = useState(initialData)
+  const [formData, setFormData] = useState(initialData || EMPTY_STORE);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   function handleChange(e) {
     setFormData({
@@ -38,15 +74,14 @@ export default function StoreForm({
 
   function handleSubmit(e) {
     e.preventDefault()
-    onSubmit({
-      ...formData,
-      address: {
-        ...formData.address,
-        latitude: Number(formData.address.latitude) || null,
-        longitude: Number(formData.address.longitude) || null
-      }
-    })
+    onSubmit(formData)
   }
+
+  const handleReset = () => {
+    setFormData(initialData);
+  }
+
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -96,8 +131,8 @@ export default function StoreForm({
         </Col>
       </Row>
 
-      {/* ===== Opening Hours (JSONB) ===== */}
-      <h5 className="mb-3">Opening Hours</h5>
+      {/* ===== Operating Hours (JSONB) ===== */}
+      <h5 className="mb-3">Operating Hours</h5>
 
       {Object.keys(formData.operating_hours).map(day => (
         <Form.Group key={day} className="mb-2">
