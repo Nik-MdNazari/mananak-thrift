@@ -166,10 +166,16 @@ app.post('/stores', async (req, res) => {
     const {
       name,
       description,
-      opening_hours,
+      price_range,
+      operating_hours,
+      google_maps_link,
+      added_by,
       address,
       contacts
     } = req.body;
+
+    const fullAddress = `${address.unit_number ? `${address.unit_number}, ` : ''}${address.address_line_1}, ${address.address_line_2 ? `${address.address_line_2}, ` : ''} ${address.postal_code}, ${address.city}, ${address.state}`
+    
 
     if (!name || !address) {
       return res.status(400).json({
@@ -182,11 +188,11 @@ app.post('/stores', async (req, res) => {
     // 1️⃣ Insert main store
     const storeResult = await client.query(
       `
-      INSERT INTO thrift_stores (name, description, price_range, opening_hours, google_maps_link, added_by)
+      INSERT INTO thrift_stores (name, description, price_range, operating_hours, google_maps_link, added_by)
       VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id
+      RETURNING ts_id
       `,
-      [name, description, price_range, opening_hours, google_maps_link, added_by]
+      [name, description, price_range, operating_hours, google_maps_link, added_by]
     );
 
     const storeId = storeResult.rows[0].ts_id;
@@ -199,10 +205,14 @@ app.post('/stores', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       `,
       [
-        T,
-        address.address_line,
+        storeId,
+        address.unit_number,
+        address.address_line_1,
+        address.address_line_2,
         address.city,
         address.state,
+        address.postal_code,
+        fullAddress,
         address.latitude,
         address.longitude
       ]
@@ -213,12 +223,13 @@ app.post('/stores', async (req, res) => {
       `
       INSERT INTO thrift_stores_contacts
       (ts_id, phone_number, instagram_link, facebook_link)
-      VALUES ($1, $2, $3)
+      VALUES ($1, $2, $3, $4)
       `,
       [
         storeId,
-        contacts.phone,
-        contacts.instagram
+        contacts.phone_number || null,
+        contacts.instagram_link || null,
+        contacts.facebook_link || null
       ]
     );
 
@@ -250,13 +261,16 @@ app.put('/stores/:id', async (req, res) => {
     const {
       name,
       description,
-      opening_hours,
+      price_range,
+      operating_hours,
+      google_maps_link,
+      added_by,
       address,
       contacts
     } = req.body;
 
     // Check if the thrift store exists 
-    const checkQuery = await client.query('SELECT * FROM thrift_stores WHERE id = $1', [id]);
+    const checkQuery = await client.query('SELECT * FROM thrift_stores WHERE ts_id = $1', [id]);
     if (checkQuery.rowCount === 0){
       return res.status(404).json({ error: `Thrift store not found for thrift store ID: ${id}` });
     }
@@ -272,12 +286,14 @@ app.put('/stores/:id', async (req, res) => {
       SET
         name = COALESCE($1, name),
         description = COALESCE($2, description),
-        opening_hours = COALESCE($3, opening_hours),
+        price_range = COALESCE($3, price_range),
+        operating_hours = COALESCE($4, operating_hours),
+        google_maps_link = COALESCE($5, google_maps_link),
         updated_at = NOW()
-      WHERE id = $4
-      RETURNING id
+      WHERE ts_id = $6
+      RETURNING *
       `,
-      [name, description, opening_hours, id]
+      [name, description, price_range, operating_hours, google_maps_link, id]
     );
 
     if (storeResult.rows.length === 0) {
@@ -288,24 +304,36 @@ app.put('/stores/:id', async (req, res) => {
      * 2️⃣ Update address (only if provided)
      */
     if (address) {
+
+      const fullAddress = `${address.unit_number ? `${address.unit_number}, ` : ''}${address.address_line_1}, ${address.address_line_2 ? `${address.address_line_2}, ` : ''} ${address.postal_code}, ${address.city}, ${address.state}`
+      
       await client.query(
         `
         UPDATE thrift_stores_address
         SET
-          address_line = COALESCE($1, address_line),
-          city = COALESCE($2, city),
-          state = COALESCE($3, state),
-          latitude = COALESCE($4, latitude),
-          longitude = COALESCE($5, longitude)
-        WHERE store_id = $6
+          unit_number = COALESCE($1, unit_number),
+          address_line_1 = COALESCE($2, address_line_1),
+          address_line_2 = COALESCE($3, address_line_2),
+          city = COALESCE($4, city),
+          state = COALESCE($5, state),
+          postal_code = COALESCE($6, postal_code),
+          full_address = COALESCE($7, full_address),
+          latitude = COALESCE($8, latitude),
+          longitude = COALESCE($9, longitude),
+          updated_at = NOW()
+        WHERE ts_id = $10
         `,
         [
-          address.address_line,
+          address.unit_number,
+          address.address_line_1,
+          address.address_line_2,
           address.city,
           address.state,
+          address.postal_code,
+          fullAddress,
           address.latitude,
           address.longitude,
-          id
+          id,
         ]
       );
     }
@@ -318,13 +346,15 @@ app.put('/stores/:id', async (req, res) => {
         `
         UPDATE thrift_stores_contacts
         SET
-          phone = COALESCE($1, phone),
-          instagram = COALESCE($2, instagram)
-        WHERE store_id = $3
+          phone_number = COALESCE($1, phone_number),
+          instagram_link = COALESCE($2, instagram_link),
+          facebook_link = COALESCE($3, facebook_link)
+        WHERE ts_id = $4
         `,
         [
-          contacts.phone,
-          contacts.instagram,
+          contacts.phone_number,
+          contacts.instagram_link,
+          contacts.facebook_link,
           id
         ]
       );
@@ -332,24 +362,56 @@ app.put('/stores/:id', async (req, res) => {
 
     await client.query('COMMIT');
 
+    /**
+     * 4️⃣ Fetch the complete updated store with all related data
+     */
+    const completeStoreResult = await client.query(
+      `
+      SELECT 
+        ts.*,
+        json_build_object(
+          'unit_number', addr.unit_number,
+          'address_line_1', addr.address_line_1,
+          'address_line_2', addr.address_line_2,
+          'city', addr.city,
+          'state', addr.state,
+          'postal_code', addr.postal_code,
+          'full_address', addr.full_address,
+          'latitude', addr.latitude,
+          'longitude', addr.longitude
+        ) as address,
+        json_build_object(
+          'phone_number', cont.phone_number,
+          'instagram_link', cont.instagram_link,
+          'facebook_link', cont.facebook_link
+        ) as contacts
+      FROM thrift_stores ts
+      LEFT JOIN thrift_stores_address addr ON ts.TS_id = addr.TS_id
+      LEFT JOIN thrift_stores_contacts cont ON ts.TS_id = cont.TS_id
+      WHERE ts.TS_id = $1
+      `,
+      [id]
+    );
+
     res.status(200).json({
       'status': 'success',
       store_id: id,
-      'data': result.rows[0], 
+      'data': completeStoreResult.rows[0], 
       'message': 'Store updated successfully',
     });
 
   } catch (err) {
     await client.query('ROLLBACK');
-
     if (err.message === 'STORE_NOT_FOUND') {
       return res.status(404).json({ error: 'Store not found' });
     }
-
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update store' });
-  } finally {
-    client.release();
+    console.error('Full error:', err);
+    console.error('Error message:', err.message);
+    console.error('Error stack:', err.stack);
+    res.status(500).json({ 
+      error: 'Failed to update store',
+      details: err.message  // Remove this in production!
+    });
   }
 });
 
