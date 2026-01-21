@@ -3,15 +3,22 @@ import { Modal, Button, Form, Tabs, Tab, Alert } from 'react-bootstrap'
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  updateProfile
 } from 'firebase/auth'
 import { auth } from '../firebase'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 export default function LoginModal({ show, handleClose }) {
     const [key, setKey] = useState('login')
+    const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState('')
+    const navigate = useNavigate()
+
+    const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
     const getAuthErrorMessage = (code) => {
         switch (code) {
@@ -55,8 +62,25 @@ export default function LoginModal({ show, handleClose }) {
         }
 
         try {
-        await createUserWithEmailAndPassword(auth, email, password)
-        handleClose()
+            const userCredential = await createUserWithEmailAndPassword(
+                auth, 
+                email, 
+                password
+            )
+            const user = userCredential.user
+            await updateProfile(user, {
+                displayName: username,
+            })
+
+            await axios.post(`${API_BASE_URL}/users/sync`, {
+                firebase_uid: user.uid,
+                email: user.email,
+                username: username,
+            })
+
+            handleClose();
+            navigate('/profile');
+
         } catch (err) {
         setError(getAuthErrorMessage(err.code))
         }
@@ -116,6 +140,14 @@ export default function LoginModal({ show, handleClose }) {
             {/* SIGNUP TAB */}
             <Tab eventKey="signup" title="Sign Up">
                 <Form onSubmit={handleSignup}>
+
+                <Form.Control
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                />
                 <Form.Group className="mb-3">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
