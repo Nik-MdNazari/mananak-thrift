@@ -29,6 +29,44 @@ async function getPostgresVersion() {
 
 getPostgresVersion();
 
+// Sync users Firebase --> Neon users database
+app.post('/users/sync', async (req, res) => {
+  const { firebase_uid, email, username } = req.body
+
+  try {
+    const result = await pool.query(
+      `
+      INSERT INTO users (firebase_uid, email, username)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (firebase_uid)
+      DO UPDATE SET
+        email = EXCLUDED.email,
+        username = EXCLUDED.username
+      RETURNING user_id, firebase_uid, email, username
+      `,
+      [firebase_uid, email, username]
+    )
+
+    res.json(result.rows[0])
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'User sync failed' })
+  }
+})
+
+// GET /users/me - Get current user's profile
+app.get('/users/me', async (req, res) => {
+  const { uid } = req.query
+
+  const result = await pool.query(
+    'SELECT username, email, created_at FROM users WHERE firebase_uid = $1',
+    [uid]
+  )
+
+  res.json(result.rows[0])
+})
+
+
 /**
  * GET all thrift stores (FULL DATA)
  * GET /stores
@@ -148,10 +186,26 @@ app.get('/stores/:id', async (req, res) => {
   }
 });
 
+// GET /stores/user/:firebaseUid - Get all stores added by a specific user
+app.get('/stores/user/:firebaseUid', async (req, res) => {
+  const { firebaseUid } = req.params
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM thrift_stores WHERE added_by = $1',
+      [firebaseUid]
+    )
+
+    res.json(result.rows)
+  } catch (err) {
+    console.error('Error fetching stores by user:', err)
+    res.status(500).json({ error: 'Failed to fetch user stores' })
+  }
+})
 
 /**
  * POST - Create a new thrift store
- * POST /api/stores
+ * POST /stores
  */
 
 // That means:
@@ -440,7 +494,7 @@ app.delete('/stores/:id', async (req, res) => {
     }
 
     // Successful delete — no response body
-    res.status(204).json({ 'status' : 'success', 'message' : 'Thrift store deleted successfully' })
+    res.status(200).json({ 'status' : 'success', 'message' : 'Thrift store deleted successfully' })
 
   } catch (err) {
     console.error('DELETE /stores/:id error:', err.message);
@@ -451,6 +505,24 @@ app.delete('/stores/:id', async (req, res) => {
     client.release();
   }
 });
+
+
+// GET /users/:userId/stores - get all stores added by a specific user
+app.get('/users/:userId/stores', async (req, res) => {
+  const { userId } = req.params;
+  const client = await pool.connect();
+  
+  try {
+    const result = client.query('SELECT * FROM thrift_stores WHERE added_by = $1', [user_id])
+    
+  } catch(error) {
+    console.error('Error fetching stores by user: ', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release()
+  }
+})
+
 
 // Catch 404 and forward to error handler
 app.use((req, res) => {
