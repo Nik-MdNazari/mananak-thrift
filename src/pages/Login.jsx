@@ -1,161 +1,117 @@
 import { useState } from 'react'
-import { Modal, Button, Form, Tabs, Tab, Alert } from 'react-bootstrap'
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from 'firebase/auth'
+import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase'
+import { useNavigate } from 'react-router-dom'
 
-export default function Login({ show, handleClose }) {
-    const [key, setKey] = useState('login')
+export default function Login() {
+    const navigate = useNavigate()
+
+    // form state
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
-    const getAuthErrorMessage = (code) => {
-        switch (code) {
-        case 'auth/invalid-credential':
-            return 'Invalid email or password.'
-        case 'auth/invalid-email':
-            return 'Please enter a valid email address.'
-        case 'auth/too-many-requests':
-            return 'Too many attempts. Please try again later.'
-        case 'auth/email-already-in-use':
-            return 'An account with this email already exists.'
-        case 'auth/weak-password':
-            return 'Password should be at least 6 characters.'
-        default:
-            return 'Something went wrong. Please try again.'
-        }
-    }
+    // toggle login / signup
+    const [isSignup, setIsSignup] = useState(false)
 
-    const handleLogin = async (e) => {
+    async function handleSubmit(e) {
         e.preventDefault()
         setError('')
+        setLoading(true)
 
         try {
-        await signInWithEmailAndPassword(auth, email, password)
-        handleClose()
+            if (isSignup) {
+                // Sign up
+                await createUserWithEmailAndPassword(auth, email, password)
+            } else {
+                // Login
+                await signInWithEmailAndPassword(auth, email, password)
+            }
+
+            navigate('/') // redirect after success
         } catch (err) {
-            console.log('Firebase auth error:', err)
-            console.log('Error code:', err.code)
-            console.log('Error message:', err.message)
-            setError(getAuthErrorMessage(err.code))
+            setError(err.message)
         }
+
+        setLoading(false)
     }
 
-    const handleSignup = async (e) => {
-        e.preventDefault()
-        setError('')
-
-        if (password !== confirmPassword) {
-        setError('Passwords do not match')
-        return
-        }
-
-        try {
-        await createUserWithEmailAndPassword(auth, email, password)
-        handleClose()
-        } catch (err) {
-        setError(getAuthErrorMessage(err.code))
-        }
+    function handleGuest() {
+        navigate('/') // guest = no auth
     }
 
     return (
-        <Modal show={show} onHide={handleClose} centered>
-        <Modal.Header closeButton>
-            <Modal.Title>
-            {key === 'login' ? 'Login' : 'Sign Up'}
-            </Modal.Title>
-        </Modal.Header>
+        <Container
+            fluid
+            className="min-vh-100 d-flex align-items-center justify-content-center"
+            style={{ backgroundColor: '#f6f4ef' }}
+        >
+            <Row className="w-100 justify-content-center">
+                <Col md={5} lg={4}>
+                    <Card className="shadow">
+                        <Card.Body>
+                            <h2 className="text-center mb-4">
+                                {isSignup ? 'Create Account' : 'Login'}
+                            </h2>
 
-        <Modal.Body>
-            {error && <Alert variant="danger">{error}</Alert>}
+                            {error && <Alert variant="danger">{error}</Alert>}
 
-            <Tabs
-            activeKey={key}
-            onSelect={(k) => {
-                setKey(k)
-                setError('')
-            }}
-            className="mb-3"
-            justify
-            >
-            {/* LOGIN TAB */}
-            <Tab eventKey="login" title="Login">
-                <Form onSubmit={handleLogin}>
-                <Form.Group className="mb-3">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                    type="email"
-                    placeholder="Enter email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    />
-                </Form.Group>
+                            <Form onSubmit={handleSubmit}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label>Email</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </Form.Group>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    />
-                </Form.Group>
+                                <Form.Group className="mb-4">
+                                    <Form.Label>Password</Form.Label>
+                                    <Form.Control
+                                        type="password"
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </Form.Group>
 
-                <Button type="submit" variant="primary" className="w-100">
-                    Login
-                </Button>
-                </Form>
-            </Tab>
+                                <Button
+                                    type="submit"
+                                    className="w-100 mb-3"
+                                    disabled={loading}
+                                >
+                                    {isSignup ? 'Sign Up' : 'Login'}
+                                </Button>
+                            </Form>
 
-            {/* SIGNUP TAB */}
-            <Tab eventKey="signup" title="Sign Up">
-                <Form onSubmit={handleSignup}>
-                <Form.Group className="mb-3">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control
-                    type="email"
-                    placeholder="Enter email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    />
-                </Form.Group>
+                            <div className="text-center mb-3">
+                                <Button
+                                    variant="link"
+                                    onClick={() => setIsSignup(!isSignup)}
+                                >
+                                    {isSignup
+                                        ? 'Already have an account? Login'
+                                        : "Don't have an account? Sign up"}
+                                </Button>
+                            </div>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    />
-                </Form.Group>
+                            <hr />
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Confirm Password</Form.Label>
-                    <Form.Control
-                    type="password"
-                    placeholder="Confirm password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    />
-                </Form.Group>
-
-                <Button type="submit" variant="success" className="w-100">
-                    Create Account
-                </Button>
-                </Form>
-            </Tab>
-            </Tabs>
-        </Modal.Body>
-        </Modal>
+                            <Button
+                                variant="outline-secondary"
+                                className="w-100"
+                                onClick={handleGuest}
+                            >
+                                Continue as Guest
+                            </Button>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
+        </Container>
     )
 }

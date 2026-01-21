@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import AppNavbar from '../components/AppNavbar'
-import Login from '../pages/Login'
+import Login from '../components/LoginModal'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 

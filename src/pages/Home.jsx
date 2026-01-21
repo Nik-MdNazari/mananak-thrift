@@ -3,7 +3,7 @@ import { Container, Form, Row, Col, Nav, Navbar, InputGroup, Button } from 'reac
 import AppNavbar from '../components/AppNavbar.jsx'
 import ThriftStoreCard from '../components/ThriftStoreCard.jsx'
 import ThriftStoresList from './ThriftStoresList.jsx'
-import Login from './Login'
+import Login from '../components/LoginModal.jsx'
 
 const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 

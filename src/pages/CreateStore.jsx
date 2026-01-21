@@ -1,6 +1,9 @@
-import { Container } from 'react-bootstrap'
+import { Container, Card, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import StoreForm from '../components/StoreForm.jsx'
+import { useState, useContext, useEffect } from 'react'
+import { AuthContext } from '../components/AuthProvider.jsx'
+import LoginModal from '../components/LoginModal.jsx'
 
 const EMPTY_STORE = {
   name: '',
@@ -38,44 +41,95 @@ const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461p
 
 export default function CreateStore() {
     const navigate = useNavigate()
-    const { currentUser } = useContext(AuthContext)
+    const { currentUser, loading } = useContext(AuthContext)
+    const [showLoginModal, setShowLoginModal] =  useState(false);
+    const [modalDismissed, setModalDismissed] = useState(false)
+
+    useEffect(() => {
+        if (!loading && !currentUser && !modalDismissed) {
+            setShowLoginModal(true)
+        }
+    }, [currentUser, loading, modalDismissed])
 
     async function handleCreate(data) {
-    console.log('Data being sent:', JSON.stringify(data, null, 2))
-  
-    try {
-        const res = await fetch(`${API_BASE_URL}/stores`, {  // ✅ Comma INSIDE fetch()
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            ...data,
-            added_by: 1
-        })
-    })
-    
-        if (!res.ok) {
-        const errorData = await res.json()
-        console.error('Backend error:', errorData)
-        throw new Error('Failed to create store')
+        // Check if user is logged in
+        if (!currentUser) {
+            setShowLoginModal(true)
+            setModalDismissed(false) // Reset dismissal if they try to submit
+            return
         }
-        
-        const result = await res.json()  // Only call once, after checking res.ok
-        navigate(`/stores/${result.store_id}`)
-        
-    } catch (error) {
-        console.error('Error creating store:', error)
-        alert('Failed to create store. Please try again.')
-    }
-}
 
-  return (
-    <Container className="py-5">
-      <h2>Create New Store</h2>
-      <StoreForm
-        initialData={EMPTY_STORE}
-        onSubmit={handleCreate}
-        submitLabel="Create Store"
-      />
-    </Container>
-  )
+        console.log('Data being sent:', JSON.stringify(data, null, 2))
+  
+        try {
+            const res = await fetch(`${API_BASE_URL}/stores`, {  // ✅ Comma INSIDE fetch()
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...data,
+                added_by: currentUser.uid
+            })
+        })
+        
+            if (!res.ok) {
+            const errorData = await res.json()
+            console.error('Backend error:', errorData)
+            throw new Error('Failed to create store')
+            }
+            
+            const result = await res.json()
+            navigate(`/stores/${result.store_id}`)
+            
+        } catch (error) {
+            console.error('Error creating store:', error)
+            alert('Failed to create store. Please try again.')
+        }
+    }
+
+    const handleLoginClose = () => {
+        setShowLoginModal(false)
+        setModalDismissed(true)
+    } 
+
+    if (loading) {
+        return <Container className="py-5">Loading...</Container>
+    }
+    
+    return (
+        <>
+            <Container className="py-5">
+            <h2 className='mb-3'>Create New Store</h2>
+            { currentUser ?  (
+                <StoreForm
+                    initialData={EMPTY_STORE}
+                    onSubmit={handleCreate}
+                    submitLabel="Create Store"
+                />
+            ) : (
+                    <Card className="text-center py-5" style={{ backgroundColor: '#f8f9fa', border: '1px solid #dee2e6' , boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', width: '50%', margin: 'auto' }}>
+                        <div className='d-flex flex-column align-items-center justify-content-center mb-3'>
+                            <Card.Title>You are currently logged out.</Card.Title>
+                            <Card.Text>Please log in to create a store.</Card.Text>
+                            <Button 
+                                variant="primary"
+                                onClick={() => {
+                                    setModalDismissed(false)
+                                    setShowLoginModal(true)
+                                }}
+                                style={{ marginTop: '5px' , width: '120px' , alignContent: 'center'}}
+                            >
+                            Log In
+                            </Button>
+                        </div>
+                        
+                    </Card>
+                )}
+            </Container>
+
+            <LoginModal 
+                show={showLoginModal} 
+                handleClose={handleLoginClose}
+            />                            
+        </>
+    )
 }

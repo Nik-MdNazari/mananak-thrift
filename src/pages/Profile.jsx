@@ -1,26 +1,40 @@
 import { Container, Row, Col, Card, Button, ListGroup } from 'react-bootstrap'
+import { useState, useContext, useEffect } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../components/AuthProvider.jsx'
 
 export default function Profile() {
+  const { currentUser, loading } = useContext(AuthContext);
+  const [ myStores, setMyStores] = useState([]);
+  const [loadingStores, setLoadingStores] = useState(true);
+
+  const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    async function fetchMyStores() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/users/${currentUser.uid}/stores`);
+        setMyStores(res.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingStores(false);
+      }
+    }
+    fetchMyStores();
+   }, [currentUser]); 
+
   // Placeholder user data
   const user = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    joinedAt: 'January 2025',
+    username: currentUser?.displayName ||'Anonymous User',
+    email: currentUser?.email,
+    joinedAt: new Date(currentUser?.metadata.creationTime).toLocaleDateString(),
   }
 
-  // Placeholder thrift stores added by user
-  const myStores = [
-    {
-      id: 1,
-      name: 'Vintage Vault',
-      location: 'Petaling Jaya',
-    },
-    {
-      id: 2,
-      name: 'Retro Lane',
-      location: 'Kuala Lumpur',
-    },
-  ]
+  if (loading) return <p className="text-center mt-5">Loading profile...</p>
+  if (loadingStores) return <p className="text-center mt-5">Loading your stores...</p>
 
   return (
     <Container className="py-5">
