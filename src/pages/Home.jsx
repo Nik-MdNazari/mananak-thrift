@@ -3,9 +3,7 @@ import { Container, Form, Row, Col, InputGroup, Button, Card } from 'react-boots
 import { AuthContext } from '../components/AuthProvider.jsx'
 import { useLogin } from '../context/LoginContext.jsx'
 import ThriftStoreCard from '../components/ThriftStoreCard.jsx'
-import ThriftStoresList from './ThriftStoresList.jsx'
 import { useNavigate } from 'react-router-dom'
-
 
 const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
@@ -80,55 +78,63 @@ export default function Home({ onLoginClick}) {
                 <Row className="mb-4">
                     <Col className='text-center'>
                         <div className="my-5 text-center">
-                            <h1 className="fw-bold display-4 mb-3" style={{ color: theme.accent }}>
+                            <h1 className="fw-bold display-5 display-md-3 mb-3" style={{ color: theme.accent }}>
                                 Find Your Nearest Thrift Store
                             </h1>
-                            <p className="lead text-muted mx-auto" style={{ maxWidth: 700 }}>
+                            <p className="lead fs-6 fs-md-5 text-muted mx-auto" style={{ maxWidth: 700 }}>
                                 Explore thrift stores in Malaysia with locations, hours, and contact info.
                             </p>
                         </div>
 
                         {/* Search Bar */}
                         <Form className="mb-4 align-items-center justify-content-center d-flex">
-                            <InputGroup className="w-100 w-md-75 w-lg-50 shadow-sm">
-                                <Form.Control
-                                    placeholder={'Search for thrift stores, locations, or address...'}
-                                    value={search}
-                                    onChange={(e) => {setSearch(e.target.value)}}
-                                    aria-label="Search"
-                                    style={{ borderColor: theme.off, backgroundColor: '#ffffff', fontSize: '1.2rem' }}
-                                    className='px-3 py-3'
-                                />
-                            </InputGroup>
+                            <Col xs={12} md={10} lg={8} xl={6}>    
+                                <InputGroup className="w-100 w-md-75 w-lg-50 shadow-sm">
+                                    <Form.Control
+                                        placeholder={'Search for thrift stores, locations, or address...'}
+                                        value={search}
+                                        onChange={(e) => {setSearch(e.target.value)}}
+                                        aria-label="Search"
+                                        style={{ borderColor: theme.off, backgroundColor: '#ffffff', fontSize: '1.2rem' }}
+                                        className='py-3 px-3 fs-6 fs-md-3'
+                                    />
+                                </InputGroup>
+                            </Col>
                         </Form>
                     </Col>
                 </Row>
 
                 {/* Featured Thrift Store Section */}
                 <Card className="p-3 border-0 shadow-sm" style={{ backgroundColor: theme.light }}>
-                    <div className='d-flex justify-content-between align-items-center mb-1'>
-                        <div>
-                            <h3 className='fw-bold mb-0' style={{ color: theme.accent }}>
+                    <Row className="align-items-center g-3">
+                        <Col xs={12} md={6} className="text-center text-md-start">
+                            <h3 className="fw-bold mb-0 fs-4 fs-md-3" style={{ color: theme.accent }}>
                                 {search ? `Search Results (${filteredStores.length})` : "Featured Thrift Stores"}
                             </h3>
-                        </div>
-                        <div className='d-flex gap-2'>
+                        </Col>
+
+                        <Col
+                            xs={12}
+                            md={6}
+                            className="d-flex flex-column flex-sm-row gap-2 justify-content-center justify-content-md-end"
+                        >
                             <Button
-                                variant='outline-dark'
-                                style={{ borderColor: 'dark', color: theme.off, backgroundColor: theme.dark }}
-                                >
+                                className="w-20 w-sm-auto"
+                                style={{ backgroundColor: theme.dark, color: theme.off }}
+                            >
                                 <i className="bi bi-geo-alt-fill me-2"></i>
                                 Find Nearest
                             </Button>
+
                             <Button
-                                variant='outline-dark'
-                                style={{ borderColor: 'dark', color: theme.off, backgroundColor: theme.dark }}
+                                className="w-20 w-sm-auto"
+                                style={{ backgroundColor: theme.dark, color: theme.off }}
                                 onClick={handleAddStoreClick}
                             >
                                 Add or update stores
                             </Button>
-                        </div>
-                    </div>
+                        </Col>
+                    </Row>
                 </Card>
 
                 <div className="pt-1 pb-3">
