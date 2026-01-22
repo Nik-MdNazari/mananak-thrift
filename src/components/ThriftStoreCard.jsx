@@ -10,79 +10,83 @@ const theme = {
 }
 
 export default function ThriftStoreCard({ store = {} }) {
-    const stars = (n = 0) => '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n))
-    const navigate = useNavigate();
+  const navigate = useNavigate()
 
-    return (
-        <Card className="h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+  const stars = (n = 0) =>
+    '★'.repeat(Math.max(0, Math.min(5, n))) +
+    '☆'.repeat(5 - Math.max(0, Math.min(5, n)))
 
-            
-            {/* Card Image */}
-            {store.img ? (
-                <Card.Img
-                    variant="top"
-                    src={store.img}
-                    alt={store.name}
-                    className="img-fluid"
-                    style={{ height: 200, objectFit: 'cover' }}
-                />
-            ) : (
-                <div style={{ height: 180, backgroundColor: theme.light, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.dark, fontWeight: 600 }}>
-                    No image
-                </div>
-            )}
+  return (
+    <Card className="h-100 shadow-sm border-0 rounded-3">
+      {/* Card Body as flex column for height control */}
+      <Card.Body className="d-flex flex-column">
 
-            <Card.Body>
-                <Card.Title style={{ color: theme.dark, fontWeight: 700, fontSize: '1.5rem' }} className='d-flex justify-content-between align-items-start '>
-                    <span>{store.name || 'Unknown Store'}</span>
+        {/* Header */}
+        <div className="mb-2 d-flex justify-content-between align-items-start">
+          <Card.Title
+            as={'h3'}
+            className="fw-bold mb-0 fs-6 fs-md-5 fs-lg-4"
+            style={{ color: theme.dark }}
+          >
+            {store.name || 'Unknown Store'}
+          </Card.Title>
 
-                    {/* Star icons to represent ratings
-                        - will be updated to be dynamic depending on the store's review rating
-                    */}
-                    {typeof store.rating === 'number' && (
-                        <Badge bg="light" text="dark" style={{ border: `1px solid ${theme.mid}`, color: theme.accent }}>
-                        {stars(store.rating)}
-                        </Badge>
-                    )}
-                </Card.Title>
-            
+          {typeof store.rating === 'number' && (
+            <Badge
+              bg="light"
+              text="dark"
+              className="ms-2 fs-6"
+              style={{ border: `1px solid ${theme.mid}`, color: theme.accent }}
+            >
+              {stars(store.rating)}
+            </Badge>
+          )}
+        </div>
 
-                <Card.Text style={{ color: theme.dark , }}>
-                    {store.description || 'No description available for this thrift store.'}                    
-                </Card.Text>
+        {/* Description (clamped) */}
+        <Card.Text
+          className="fs-6 mb-3"
+        >
+          {store.description || 'No description available for this thrift store.'}
+        </Card.Text>
 
-                <div className='my-2 d-flex'>
-                    <i className='bi bi-geo-alt me-2' />
-                    <div>
-                        {store.address?.full_address || 'Address not available'}
-                    </div>
-                </div>
-                <div className='my-2'>
-                    <i className='bi bi-clock me-2' />{store.openingHours || 'Opening hours not available'}
-                    {store.openingHours && (
-                        <Badge bg="success" className='ms-4'>Open Now</Badge>
-                    )}
-                </div>
+        {/* Address */}
+        <div className="d-flex align-items-start mb-2 fs-6 text-muted">
+          <i className="bi bi-geo-alt me-2 mt-1" />
+          <span>
+            {store.address?.full_address || 'Address not available'}
+          </span>
+        </div>
 
-                { /* Buttons for directions and details */ }
-                <div className="d-grid gap-2 d-md-flex mt-4">
-                    <Button 
-                        className="flex-fill" 
-                        variant='outline-dark'
-                        href={store.google_maps_link}
-                        target="_blank"
-                    >
-                        Show Direction
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        className="flex-fill"
-                        onClick={() => navigate(`/stores/${store.ts_id}`)}
-                    >
-                        View Details
-                    </Button>
-                </div>
-            </Card.Body>
-        </Card>
-    )
+        {/* Opening hours */}
+        <div className="d-flex align-items-center mb-3 fs-6 text-muted">
+          <i className="bi bi-clock me-2" />
+          <span>{store.openingHours || 'Opening hours not available'}</span>
+        </div>
+
+        {/* Spacer to push buttons to bottom */}
+        <div className="mt-auto" />
+
+        {/* Actions */}
+        <div className="d-grid gap-2 d-md-flex">
+          <Button
+            className="w-100 w-md-auto fs-6"
+            variant="outline-dark"
+            href={store.google_maps_link}
+            target="_blank"
+          >
+            Show Direction
+          </Button>
+
+          <Button
+            className="w-100 w-md-auto fs-6"
+            variant="secondary"
+            onClick={() => navigate(`/stores/${store.ts_id}`)}
+          >
+            View Details
+          </Button>
+        </div>
+      </Card.Body>
+    </Card>
+  )
 }

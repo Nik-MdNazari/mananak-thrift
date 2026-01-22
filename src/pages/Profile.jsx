@@ -1,4 +1,4 @@
-import { Container, Row, Col, Card, Button, ListGroup } from 'react-bootstrap'
+import { Container, Row, Col, Card, Button, ListGroup, Spinner } from 'react-bootstrap'
 import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../components/AuthProvider.jsx'
@@ -7,6 +7,14 @@ import { useToast } from '../components/ToastProvider'
 import ConfirmModal from '../components/ConfirmModal.jsx';
 
 export default function Profile() {
+  const theme = {
+        dark: '#45595a',
+        accent: '#c85103',
+        mid: '#a2a092',
+        light: '#e8e8e0',
+        off: '#f6f4ef'
+  }
+  
   const { currentUser, loading } = useContext(AuthContext);
   const [ dbUser, setDbUser ] = useState(null);
   const [ myStores, setMyStores] = useState([]);
@@ -47,20 +55,6 @@ export default function Profile() {
 
    }, [currentUser]); 
 
-  //  const handleDeleteStore = async (storeId) => {
-  //   try {
-  //     await axios.delete(`${API_BASE_URL}/stores/${storeId}`);
-  //     setMyStores(myStores.filter(store => store.ts_id !== storeId));
-  //     showToast('Store deleted successfully', 'success');
-
-  //   } catch (error) {
-  //     console.error('Error deleting store: ', error);
-  //     showToast('Failed to delete store', 'danger');
-  //   } finally {
-  //     setShowDeleteModal(false);
-  //   }
-  // }
-
     async function confirmDelete() {
       try {
         await axios.delete(`${API_BASE_URL}/stores/${selectedStoreId}`)
@@ -80,94 +74,105 @@ export default function Profile() {
     joinedAt: new Date(dbUser?.created_at).toLocaleDateString(),
   }
 
-  if (loading) return <p className="text-center mt-5">Loading profile...</p>
-  if (loadingStores) return <p className="text-center mt-5">Loading your stores...</p>
+  if (loading) return (
+    <div className="d-flex justify-content-center align-items-center py-5 w-100">
+      <Spinner animation="border" variant="secondary" />
+    </div>
+  )
+
+  if (loadingStores) return (
+    <div className="d-flex justify-content-center align-items-center py-5 w-100">
+      <Spinner animation="border" variant="secondary" />
+    </div>
+  )
 
   return (
-    <Container className="py-5">
-      <Row>
-        {/* USER INFO */}
-        <Col md={4}>
-          <Card className="shadow-sm border-0 mb-4">
-            <Card.Body>
-              <h4 className="mb-3">My Profile</h4>
-              <p><strong>Name:</strong> {user.username}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Member since:</strong> {user.joinedAt}</p>
+    <div style={{ minHeight: '100vh', backgroundColor: theme.off, color: theme.dark }}>
+      <Container className="py-5">
+        <Row>
+          {/* USER INFO */}
+          <Col md={4}>
+            <Card className="shadow-sm border-0 mb-4">
+              <Card.Body>
+                <h4 className="mb-3">My Profile</h4>
+                <p><strong>Name:</strong> {user.username}</p>
+                <p><strong>Email:</strong> {user.email}</p>
+                <p><strong>Member since:</strong> {user.joinedAt}</p>
 
-              <Button variant="outline-secondary" className="w-100 mt-2">
-                Edit Profile
-              </Button>
-            </Card.Body>
-          </Card>
-        </Col>
+                <Button variant="outline-secondary" className="w-100 mt-2">
+                  Edit Profile
+                </Button>
+              </Card.Body>
+            </Card>
+          </Col>
 
-        {/* USER'S STORES */}
-        <Col md={8}>
-          <Card className='mb-3'>
-            <Card.Body>
-              <h4 className="mb-3">My Contribution</h4>
+          {/* USER'S STORES */}
+          <Col md={8}>
+            <Card className='mb-3'>
+              <Card.Body>
+                <h4 className="mb-3">My Contribution</h4>
 
-              {myStores.length === 0 ? (
-                <p className="text-muted">
-                  You haven’t added any thrift stores yet.
-                </p>
-              ) : (
-                <ListGroup variant="flush">
-                  {myStores.map((store) => (
-                    <ListGroup.Item 
-                      key={store.id}
-                      className="py-3 d-flex justify-content-between align-items-center"
-                    >
-                      <div>
-                        <h6 className="mb-0">{store.name}</h6>
-                        <small className="text-muted">{store.location}</small>
-                      </div>
+                {myStores.length === 0 ? (
+                  <p className="text-muted">
+                    You haven’t added any thrift stores yet.
+                  </p>
+                ) : (
+                  <ListGroup variant="flush">
+                    {myStores.map((store) => (
+                      <ListGroup.Item 
+                        key={store.id}
+                        className="py-3 d-flex justify-content-between align-items-center"
+                      >
+                        <div>
+                          <h6 className="mb-0">{store.name}</h6>
+                          <small className="text-muted">{store.location}</small>
+                        </div>
 
-                      <div className="d-flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline-primary" 
-                          onClick={() => navigate(`/stores/${store.ts_id}/edit`)}
-                        >
-                          Edit
-                        </Button>
+                        <div className="d-flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline-primary" 
+                            onClick={() => navigate(`/stores/${store.ts_id}/edit`)}
+                          >
+                            Edit
+                          </Button>
 
-                        <Button 
-                          size="sm" 
-                          variant="outline-danger" 
-                          onClick={() => {
-                            setShowDeleteModal(true)
-                            setSelectedStoreId(store.ts_id)
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </Card.Body>
-          </Card>
+                          <Button 
+                            size="sm" 
+                            variant="outline-danger" 
+                            onClick={() => {
+                              setShowDeleteModal(true)
+                              setSelectedStoreId(store.ts_id)
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
+                )}
+              </Card.Body>
+            </Card>
 
-          <Button variant='secondary' className='mt-3 mx-2' onClick={() => navigate('/stores/new')}>
-            Add Thrift Store
-          </Button>
-          <Button variant="dark" className="mt-3 mx-1" onClick={() => navigate('/')}>
-            Back to Home
-          </Button>
-        </Col>
-      </Row>
-      <ConfirmModal
-        show={showDeleteModal}
-        title="Deleting Thrift Store"
-        message={<span>Are you sure you want to delete this thrift store?<br/>This action cannot be undone.</span>}
-        confirmText="Delete"
-        confirmVariant="danger"
-        onConfirm={confirmDelete}
-        onCancel={() => setShowDeleteModal(false)}
-      />
-    </Container>
+            <Button variant='secondary' className='mt-3 mx-2' onClick={() => navigate('/stores/new')}>
+              Add Thrift Store
+            </Button>
+            <Button variant="dark" className="mt-3 mx-1" onClick={() => navigate('/')}>
+              Back to Home
+            </Button>
+          </Col>
+        </Row>
+        <ConfirmModal
+          show={showDeleteModal}
+          title="Deleting Thrift Store"
+          message={<span>Are you sure you want to delete this thrift store?<br/>This action cannot be undone.</span>}
+          confirmText="Delete"
+          confirmVariant="danger"
+          onConfirm={confirmDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      </Container>
+    </div>
   )
 }

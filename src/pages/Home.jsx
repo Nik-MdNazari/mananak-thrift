@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react'
-import { Container, Form, Row, Col, InputGroup, Button, Card } from 'react-bootstrap'
+import { Container, Form, Row, Col, InputGroup, Button, Card, Spinner, Alert } from 'react-bootstrap'
 import { AuthContext } from '../components/AuthProvider.jsx'
 import { useLogin } from '../context/LoginContext.jsx'
 import ThriftStoreCard from '../components/ThriftStoreCard.jsx'
@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
-export default function Home({ onLoginClick}) {
+export default function Home() {
     const theme = {
         dark: '#45595a',
         accent: '#c85103',
@@ -28,8 +28,10 @@ export default function Home({ onLoginClick}) {
     useEffect(() => {
         async function fetchStores() {
             try {
-                const res = await fetch(`${API_BASE_URL}/stores`)
+                setLoading(true)
+                setError(null)
 
+                const res = await fetch(`${API_BASE_URL}/stores`)
                 if (!res.ok) {
                     throw new Error('Failed to fetch stores')
                 }
@@ -71,10 +73,25 @@ export default function Home({ onLoginClick}) {
         }
     }
 
+    {/* LOADING STATE */}
+    {loading && (
+    <div className="d-flex justify-content-center align-items-center py-5">
+        <Spinner animation="border" role="status" variant="secondary">
+        <span className="visually-hidden">Loading...</span>
+        </Spinner>
+    </div>
+    )}
+
+    {/* ERROR STATE */}
+    {!loading && error && (
+        <Alert variant="danger" className="text-center my-4">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            {error}
+        </Alert>
+    )}
     return (
         <div style={{ minHeight: '100vh', backgroundColor: theme.off, color: theme.dark }}>
-
-            <Container className="py-5">
+            <Container className="py-3 mb-3">
                 <Row className="mb-4">
                     <Col className='text-center'>
                         <div className="my-5 text-center">
@@ -147,19 +164,44 @@ export default function Home({ onLoginClick}) {
                             View All Stores <i className="bi bi-arrow-right ms-1"></i>
                         </Button>
                 </div>
-                
+
+                {/* Thrift Store Cards */}
                 <Row>
-                    {filteredStores.map(store => (
-                        <Col xs={12} md={6} lg={4} className="mb-4" key={store.ts_id}>
-                            <ThriftStoreCard store={store} />
-                        </Col>
-                    ))}
+                    {loading && (
+                        <div className="d-flex justify-content-center align-items-center py-5 w-100">
+                        <Spinner animation="border" variant="secondary" />
+                        </div>
+                    )}
+
+                    {!loading && error && (
+                        <Alert variant="danger" className="text-center w-100 my-4">
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        {error}
+                        </Alert>
+                    )}
+
+                    {!loading && !error && (
+                        <>
+                            {filteredStores.length === 0 ? (
+                                <div className="text-center py-5 text-muted w-100">
+                                <i className="bi bi-search fs-1 d-block mb-3"></i>
+                                No thrift stores found.
+                                </div>
+                            ) : (
+                                filteredStores.map(store => (
+                                <Col xs={12} md={6} lg={4} className="mb-4" key={store.ts_id}>
+                                    <ThriftStoreCard store={store} />
+                                </Col>
+                                ))
+                            )}
+                        </>
+                    )}
                 </Row>
             </Container>
 
-            <footer className="py-4 text-center mt-auto" style={{ backgroundColor: theme.dark, color: theme.off }}>
+            <footer className="py-3 text-center mt-auto" style={{ backgroundColor: theme.dark, color: theme.off }}>
                 <Container>
-                    <small>&copy; {new Date().getFullYear()} ThriftFinder</small>
+                    <small>&copy; {new Date().getFullYear()} manaNakThrift</small>
                 </Container>
             </footer>
         </div>
