@@ -97,6 +97,7 @@ export default function StoreForm({
             <Form.Floating className="mb-3">
                 <Form.Control
                     as="textarea"
+                    name="description"
                     placeholder="Description"
                     style={{ height: '120px' }}
                     value={formData.description}

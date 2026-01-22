@@ -12,65 +12,66 @@ const theme = {
 export default function ThriftStoreCard({ store = {} }) {
   const navigate = useNavigate()
 
-  const stars = (n = 0) =>
-    '★'.repeat(Math.max(0, Math.min(5, n))) +
-    '☆'.repeat(5 - Math.max(0, Math.min(5, n)))
+  // Get Friday's hours from operating_hours
+  const fridayHours = store.operating_hours?.friday || 'Closed'
 
   return (
     <Card className="h-100 shadow-sm border-0 rounded-3">
       {/* Card Body as flex column for height control */}
-      <Card.Body className="d-flex flex-column">
+      <Card.Body className="d-flex flex-column p-3 p-md-4">
 
-        {/* Header */}
-        <div className="mb-2 d-flex justify-content-between align-items-start">
-          <Card.Title
-            as={'h3'}
-            className="fw-bold mb-0 fs-6 fs-md-5 fs-lg-4"
-            style={{ color: theme.dark }}
-          >
-            {store.name || 'Unknown Store'}
-          </Card.Title>
-
-          {typeof store.rating === 'number' && (
-            <Badge
-              bg="light"
-              text="dark"
-              className="ms-2 fs-6"
-              style={{ border: `1px solid ${theme.mid}`, color: theme.accent }}
-            >
-              {stars(store.rating)}
-            </Badge>
-          )}
+        {/* Status Badges */}
+        <div className="mb-2 mb-md-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <Badge bg="warning" text="dark" className="px-2 py-1 fs-6 fs-md-7">
+            {store.address?.state || 'N/A'}
+          </Badge>
+          <Badge bg="success" className="px-2 py-1 fs-6 fs-md-7">
+            Open now
+          </Badge>
         </div>
 
-        {/* Description (clamped) */}
-        <Card.Text
-          className="fs-6 mb-3"
+        {/* Store Title */}
+        <Card.Title
+          as={'h2'}
+          className="fw-bold mb-2 mb-md-3 fs-5 fs-md-4"
+          style={{ color: theme.dark }}
         >
-          {store.description || 'No description available for this thrift store.'}
-        </Card.Text>
+          {store.name || 'Unknown Store'}
+        </Card.Title>
 
-        {/* Address */}
-        <div className="d-flex align-items-start mb-2 fs-6 text-muted">
-          <i className="bi bi-geo-alt me-2 mt-1" />
-          <span>
-            {store.address?.full_address || 'Address not available'}
+        {/* Location */}
+        <div className="d-flex align-items-center mb-2 mb-md-3">
+          <i className="bi bi-geo-alt-fill me-2 fs-6 fs-md-5" style={{ color: theme.accent }} />
+          <span className="text-muted fs-6 fs-md-7">
+            {store.address?.city && store.address?.state
+              ? `${store.address.city}, ${store.address.state}`
+              : 'Location not available'}
           </span>
         </div>
 
-        {/* Opening hours */}
-        <div className="d-flex align-items-center mb-3 fs-6 text-muted">
-          <i className="bi bi-clock me-2" />
-          <span>{store.openingHours || 'Opening hours not available'}</span>
-        </div>
+        {/* Operating Hours Card */}
+        <Card className="mb-2 mb-md-3 border" style={{ backgroundColor: theme.off }}>
+          <Card.Body className="py-2 px-3">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div className="d-flex align-items-center">
+                <i className="bi bi-calendar-day me-2 fs-6" />
+                <span className="fw-medium fs-6">Friday</span>
+              </div>
+              <div className="d-flex align-items-center">
+                <i className="bi bi-clock me-2 fs-6" />
+                <span className="fs-6">{fridayHours}</span>
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
 
         {/* Spacer to push buttons to bottom */}
         <div className="mt-auto" />
 
         {/* Actions */}
-        <div className="d-grid gap-2 d-md-flex">
+        <div className="d-grid gap-2 d-sm-flex">
           <Button
-            className="w-100 w-md-auto fs-6"
+            className="w-100 w-sm-auto fs-6"
             variant="outline-dark"
             href={store.google_maps_link}
             target="_blank"
@@ -79,7 +80,7 @@ export default function ThriftStoreCard({ store = {} }) {
           </Button>
 
           <Button
-            className="w-100 w-md-auto fs-6"
+            className="w-100 w-sm-auto fs-6"
             variant="secondary"
             onClick={() => navigate(`/stores/${store.ts_id}`)}
           >
