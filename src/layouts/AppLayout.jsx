@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react'
 import AppNavbar from '../components/AppNavbar'
-import Login from '../components/LoginModal'
+import LoginModal from '../components/LoginModal'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import ConfirmModal from '../components/ConfirmModal'
 import { useToast } from '../components/ToastProvider'
+import { useLogin } from '../context/LoginContext'
 
 export default function AppLayout({ children }) {
     const [user, setUser] = useState(null)
-    const [showLogin, setShowLogin] = useState(false)
     const [showLogoutModal, setShowLogoutModal] = useState(false)
     const { showToast } = useToast()
 
-    const openLogin = () => setShowLogin(true)
-    const closeLogin = () => setShowLogin(false)
+    const { showLogin, openLogin, closeLogin } = useLogin();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -38,9 +37,7 @@ export default function AppLayout({ children }) {
   return (
     <>
       <AppNavbar
-        onLoginClick={openLogin}
         onLogout={() => setShowLogoutModal(true)}
-        isLoggedIn={!!user}
       />
 
       {/* Page Content */}
@@ -49,7 +46,7 @@ export default function AppLayout({ children }) {
       </main>
 
       {/* Global Login Modal */}
-      <Login
+      <LoginModal
         show={showLogin}
         handleClose={closeLogin}
       />

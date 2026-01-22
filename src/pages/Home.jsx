@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
-import { Container, Form, Row, Col, Nav, Navbar, InputGroup, Button } from 'react-bootstrap'
-import AppNavbar from '../components/AppNavbar.jsx'
+import { useState, useEffect, useContext } from 'react'
+import { Container, Form, Row, Col, InputGroup, Button, Card } from 'react-bootstrap'
+import { AuthContext } from '../components/AuthProvider.jsx'
+import { useLogin } from '../context/LoginContext.jsx'
 import ThriftStoreCard from '../components/ThriftStoreCard.jsx'
 import ThriftStoresList from './ThriftStoresList.jsx'
-import Login from '../components/LoginModal.jsx'
+import { useNavigate } from 'react-router-dom'
+
 
 const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
-export default function Home() {
+export default function Home({ onLoginClick}) {
     const theme = {
         dark: '#45595a',
         accent: '#c85103',
@@ -16,10 +18,14 @@ export default function Home() {
         off: '#f6f4ef'
     }
 
+    const { currentUser } = useContext(AuthContext);
+    const { openLogin } = useLogin();
+
     const [stores, setStores] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [search, setSearch] = useState('');
+    const navigate = useNavigate();
     
     useEffect(() => {
         async function fetchStores() {
@@ -41,6 +47,31 @@ export default function Home() {
 
         fetchStores()
     }, [])
+
+    // Filter stores based on search query
+    const filteredStores = stores.filter(store => {
+        const searchLower = search.toLowerCase();
+        
+        return (
+            store.name?.toLowerCase().includes(searchLower) ||
+            store.description?.toLowerCase().includes(searchLower) ||
+            store.address?.city?.toLowerCase().includes(searchLower) ||
+            store.address?.state?.toLowerCase().includes(searchLower) ||
+            store.address?.full_address?.toLowerCase().includes(searchLower) ||
+            store.address?.address_line_1?.toLowerCase().includes(searchLower)
+        );
+    });
+
+    // Handler for Add Store button
+    const handleAddStoreClick = () => {
+        if (!currentUser) {
+            // If user is not logged in...  show login modal
+            openLogin();
+        } else {
+            // If user is logged in... navigate to add store page
+            navigate("/stores/new")  // or use React Router's navigate
+        }
+    }
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: theme.off, color: theme.dark }}>
@@ -68,21 +99,52 @@ export default function Home() {
                                     style={{ borderColor: theme.off, backgroundColor: '#ffffff', fontSize: '1.2rem' }}
                                     className='px-3 py-3'
                                 />
-                                <Button
-                                    onClick={() => {}}
-                                    style={{ backgroundColor: theme.dark, borderColor: theme.dark, color: theme.off }}
-                                >
-                                    <i className="bi bi-search me-1"></i>Search
-                                </Button>
                             </InputGroup>
                         </Form>
                     </Col>
                 </Row>
 
                 {/* Featured Thrift Store Section */}
+                <Card className="p-3 border-0 shadow-sm" style={{ backgroundColor: theme.light }}>
+                    <div className='d-flex justify-content-between align-items-center mb-1'>
+                        <div>
+                            <h3 className='fw-bold mb-0' style={{ color: theme.accent }}>
+                                {search ? `Search Results (${filteredStores.length})` : "Featured Thrift Stores"}
+                            </h3>
+                        </div>
+                        <div className='d-flex gap-2'>
+                            <Button
+                                variant='outline-dark'
+                                style={{ borderColor: 'dark', color: theme.off, backgroundColor: theme.dark }}
+                                >
+                                <i className="bi bi-geo-alt-fill me-2"></i>
+                                Find Nearest
+                            </Button>
+                            <Button
+                                variant='outline-dark'
+                                style={{ borderColor: 'dark', color: theme.off, backgroundColor: theme.dark }}
+                                onClick={handleAddStoreClick}
+                            >
+                                Add or update stores
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+
+                <div className="pt-1 pb-3">
+                        <Button 
+                            variant="link" 
+                            style={{ color: theme.dark, textDecoration: 'none' }}
+                            className="fw-semibold"
+                            onClick={() => navigate('/stores')}
+                        >
+                            View All Stores <i className="bi bi-arrow-right ms-1"></i>
+                        </Button>
+                </div>
+                
                 <Row>
-                    {stores.map(store => (
-                        <Col xs={12} md={6} lg={4} className="mb-4" key={store.id}>
+                    {filteredStores.map(store => (
+                        <Col xs={12} md={6} lg={4} className="mb-4" key={store.ts_id}>
                             <ThriftStoreCard store={store} />
                         </Col>
                     ))}

@@ -1,14 +1,17 @@
 import { Navbar, Nav, Container } from 'react-bootstrap'
 import { useContext } from 'react'
 import { AuthContext } from './AuthProvider'
+import { useLogin } from '../context/LoginContext.jsx'
 
-export default function AppNavbar({ onLoginClick, onLogout }) {
+export default function AppNavbar({ onLogout }) {
     const theme = {
-    accent: '#c85103',
-    off: '#f6f4ef',
+      accent: '#c85103',
+      off: '#f6f4ef',
     }
 
     const { currentUser } = useContext(AuthContext)
+    const { openLogin } = useLogin();
+
     const isLoggedIn = !!currentUser
 
   return (
@@ -40,7 +43,7 @@ export default function AppNavbar({ onLoginClick, onLogout }) {
         {!isLoggedIn ? (
             <Nav.Item>
                 <Nav.Link
-                onClick={onLoginClick}
+                onClick={openLogin}
                 className="text-light"
                 style={{ cursor: 'pointer' }}
                 >
