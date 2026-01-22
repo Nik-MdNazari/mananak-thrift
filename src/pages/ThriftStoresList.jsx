@@ -44,7 +44,7 @@ export default function ThriftStoresList() {
             <h1 className="mb-4">Thrift Stores</h1>
             <Row >
                 {stores.map((store) => (
-                    <Col md={5} key={store.id} className="mb-4">
+                    <Col xs={12} md={6} lg={4} className="mb-4" key={store.id}>
                         <ThriftStoreCard store={store} />
                     </Col>
                 ))}

@@ -4,6 +4,7 @@ import StoreForm from '../components/StoreForm.jsx'
 import { useState, useContext, useEffect } from 'react'
 import { AuthContext } from '../components/AuthProvider.jsx'
 import LoginModal from '../components/LoginModal.jsx'
+import { useToast } from '../components/ToastProvider'
 
 const EMPTY_STORE = {
   name: '',
@@ -44,6 +45,7 @@ export default function CreateStore() {
     const { currentUser, loading } = useContext(AuthContext)
     const [showLoginModal, setShowLoginModal] =  useState(false);
     const [modalDismissed, setModalDismissed] = useState(false)
+    const { showToast } = useToast()
 
     useEffect(() => {
         if (!loading && !currentUser && !modalDismissed) {
@@ -58,8 +60,7 @@ export default function CreateStore() {
             setModalDismissed(false) // Reset dismissal if they try to submit
             return
         }
-
-        console.log('Data being sent:', JSON.stringify(data, null, 2))
+        //console.log('Data being sent:', JSON.stringify(data, null, 2))
   
         try {
             const res = await fetch(`${API_BASE_URL}/stores`, {  // ✅ Comma INSIDE fetch()
@@ -75,14 +76,16 @@ export default function CreateStore() {
             const errorData = await res.json()
             console.error('Backend error:', errorData)
             throw new Error('Failed to create store')
+            
             }
             
             const result = await res.json()
+            showToast('Thrift store added successfully 🎉')
             navigate(`/stores/${result.store_id}`)
             
         } catch (error) {
             console.error('Error creating store:', error)
-            alert('Failed to create store. Please try again.')
+            showToast('Failed to add store', 'danger')
         }
     }
 

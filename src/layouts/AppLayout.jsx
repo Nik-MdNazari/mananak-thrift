@@ -3,11 +3,14 @@ import AppNavbar from '../components/AppNavbar'
 import Login from '../components/LoginModal'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { auth } from '../firebase'
+import ConfirmModal from '../components/ConfirmModal'
+import { useToast } from '../components/ToastProvider'
 
 export default function AppLayout({ children }) {
     const [user, setUser] = useState(null)
     const [showLogin, setShowLogin] = useState(false)
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [showLogoutModal, setShowLogoutModal] = useState(false)
+    const { showToast } = useToast()
 
     const openLogin = () => setShowLogin(true)
     const closeLogin = () => setShowLogin(false)
@@ -20,15 +23,23 @@ export default function AppLayout({ children }) {
         return () => unsubscribe()
     }, [])
 
-    const handleLogout = async () => {
+    const confirmLogout = async () => {
+      try {
         await signOut(auth)
+        showToast('Logged out successfully', 'secondary')
+      } catch (error) {
+        console.error(error)
+        showToast('Failed to log out', 'danger')
+      } finally {
+        setShowLogoutModal(false)
+      }
     }
 
   return (
     <>
       <AppNavbar
         onLoginClick={openLogin}
-        onLogout={handleLogout}
+        onLogout={() => setShowLogoutModal(true)}
         isLoggedIn={!!user}
       />
 
@@ -41,6 +52,17 @@ export default function AppLayout({ children }) {
       <Login
         show={showLogin}
         handleClose={closeLogin}
+      />
+
+      {/* Logout Confirmation */}
+      <ConfirmModal
+        show={showLogoutModal}
+        title="Logging out"
+        message="Are you sure you want to log out?"
+        confirmText="Log out"
+        confirmVariant="primary"
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
       />
     </>
   )

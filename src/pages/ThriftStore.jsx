@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Spinner, Alert, Navbar, Nav, Carousel, Badge, Button, Card } from "react-bootstrap";
-import AppNavbar from '../components/AppNavbar';
 
 const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
@@ -51,137 +50,213 @@ export default function ThriftStore() {
     contacts
   } = store;
 
-  // Convert price_range number → symbols
-  const renderPriceRange = (level) => "₱".repeat(level);
+    // Convert price_range number → symbols
+    const renderPriceRange = (level = 0) => {
+        const max = 5;
 
-  // Render stars from average_rating
-  const renderStars = (rating) =>
-    "★".repeat(rating) + "☆".repeat(5 - rating);
+        return (
+            <span className="d-inline-flex align-items-center">
+            {[...Array(max)].map((_, i) => (
+                <i
+                style={{ fontSize: '1rem' }}
+                key={i}
+                className={`bi bi-currency-dollar ${
+                    i < level ? 'fw-bold text-dark' : 'text-muted'
+                }`}
+                />
+            ))}
+            </span>
+        );
+    };
 
-  // OpenStreetMap iframe URL
+    // Render stars from average_rating
+    const renderStars = (rating = 0) => {
+        const max = 5;
+
+        return (
+            <span className="d-inline-flex align-items-center">
+            {[...Array(max)].map((_, i) => (
+                <i
+                style={{ fontSize: '1rem' }}
+                key={i}
+                className={`bi bi-star-fill me-1 ${
+                    i < rating ? 'text-warning' : 'text-muted'
+                }`}
+                />
+            ))}
+            </span>
+        );
+    };
+
   const mapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${address.longitude - 0.01}%2C${address.latitude - 0.01}%2C${address.longitude + 0.01}%2C${address.latitude + 0.01}&layer=mapnik&marker=${address.latitude}%2C${address.longitude}`;
-
-  // Directions (current location → store)
   const directionsLink = `https://www.google.com/maps/dir/?api=1&destination=${address.latitude},${address.longitude}`;
 
-  return (
-    <Container className="py-4">
-      {/* Title */}
-      <h1 className="fw-bold">{name}</h1>
-      <p className="text-muted">
-        📍 {address.city}, {address.state}
-      </p>
+    return (
+        <div className="bg-light min-vh-100">
+            <Container className="py-4">
 
-      {/* Rating & Price */}
-      <div className="mb-3">
-        <Badge bg="warning" text="dark" className="me-2">
-          {renderStars(average_rating)}
-        </Badge>
-        <small className="text-muted me-3">
-          ({total_ratings} reviews)
-        </small>
-        <Badge bg="secondary">
-          {renderPriceRange(price_range)}
-        </Badge>
-      </div>
+            {/* STOREHEADER */}
+            <Card className="border-0 shadow-sm mb-4">
+                <Card.Body>
+                    <Row className="align-items-center">
+                        <Col md={8}>
+                            <h1 className="fw-bold mb-1">{name}</h1>
 
-      <p>{description}</p>
+                            <p className="text-muted mb-4">
+                                <i className="bi bi-geo-alt me-1" />
+                                {address.city}, {address.state}
+                            </p>
 
-      <Row className="g-4 mt-2">
-        {/* LEFT COLUMN */}
-        <Col md={8}>
-          {/* Opening Hours */}
-          <Card className="mb-3">
-            <Card.Body>
-              <h5>Opening Hours</h5>
-              {Object.entries(operating_hours).map(
-                ([day, time]) => (
-                  <div key={day}>
-                    <strong>
-                      {day.charAt(0).toUpperCase() + day.slice(1)}:
-                    </strong>{" "}
-                    {time}
-                  </div>
-                )
-              )}
-            </Card.Body>
-          </Card>
+                            <div className="d-flex flex-wrap gap-2 mb-4">
+                                <div style={{ marginRight: '1.3rem' }}>    
+                                    <Badge bg="light" text="dark">
+                                        {renderStars(average_rating)}
+                                    </Badge>
 
-          {/* Location & Address */}
-          <Card>
-            <Card.Body>
-              <h5>Location & Address</h5>
-              <p>{address.full_address}</p>
+                                    <span className="text-muted small">
+                                        {total_ratings} reviews
+                                    </span>                                    
+                                </div>
+                                    
+                                <Badge bg="light">
+                                    {renderPriceRange(price_range)}
+                                </Badge>
+                            </div>
 
-              <iframe
-                title="OpenStreetMap"
-                src={mapEmbedUrl}
-                width="100%"
-                height="300"
-                style={{ border: 0 }}
-                loading="lazy"
-              />
+                            {/* DESCRIPTION MOVED HERE */}
+                            <p className="mb-0" style = {{fontSize: '1rem'}}>{description}</p>
+                    </Col>
+                    </Row>
+                </Card.Body>
+                </Card>
 
-              <div className="d-flex gap-2 mt-3">
-                <Button
-                  variant="primary"
-                  href={directionsLink}
-                  target="_blank"
-                >
-                  Get Directions
-                </Button>
+            {/* MAIN CONTENT */}
+            <Row className="g-4">
 
-                <Button
-                  variant="outline-secondary"
-                  href={google_maps_link}
-                  target="_blank"
-                >
-                  Open in Google Maps
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
+                {/* LEFT CONTENT */}
+                <Col lg={8}>
 
-        {/* RIGHT COLUMN */}
-        <Col md={4}>
-          {/* Contact */}
-          <Card>
-            <Card.Body>
-              <h5>Contact</h5>
+                    {/* OPENING HOURS */}
+                    <Card className="border-0 shadow-sm mb-4">
+                        <Card.Body>
+                        <h5 className="fw-semibold mb-3">Opening Hours</h5>
 
-              {contacts.phone_number ? (
-                <p>
-                  📞{" "}
-                  <a href={`tel:${contacts.phone_number}`}>
-                    {contacts.phone_number}
-                  </a>
-                </p>
-              ) : (
-                <p className="text-muted">No phone number</p>
-              )}
+                        {Object.entries(operating_hours).map(([day, time]) => (
+                            <div
+                            key={day}
+                            className="d-flex justify-content-between border-bottom py-2 small"
+                            >
+                            <strong className="text-capitalize">{day}</strong>
+                            <span>{time || '-'}</span>
+                            </div>
+                        ))}
+                        </Card.Body>
+                    </Card>
 
-              {contacts.facebook_link && (
-                <p>
-                  {" "}
-                  <a href={contacts.facebook_link} target="_blank">
-                    Facebook
-                  </a>
-                </p>
-              )}
+                    {/* LOCATION & ADDRESS + MAP */}
+                    <Card className="border-0 shadow-sm mb-4">
+                        <Card.Body>
+                            <h5 className="fw-semibold mb-2">Location & Address</h5>
 
-              {contacts.instagram_link && (
-                <p>
-                  {" "}
-                  <a href={contacts.instagram_link} target="_blank">
-                    Instagram
-                  </a>
-                </p>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
-  );
+                            <p className="text-muted small mb-3">
+                            {address.full_address}
+                            </p>
+
+                            <div className="ratio ratio-16x9 rounded overflow-hidden mb-3">
+                            <iframe
+                                title="map"
+                                src={mapEmbedUrl}
+                                style={{ border: 0 }}
+                                loading="lazy"
+                            />
+                            </div>
+
+                            <div className="d-flex flex-wrap gap-2">
+                            <Button
+                                variant="primary"
+                                href={directionsLink}
+                                target="_blank"
+                            >
+                                <i className="bi bi-map me-1" />
+                                Get Directions
+                            </Button>
+
+                            <Button
+                                variant="outline-secondary"
+                                href={google_maps_link}
+                                target="_blank"
+                            >
+                                Open in Google Maps
+                            </Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+
+                {/* RIGHT SIDEBAR */}
+                <Col lg={4}>
+
+                <div className="sticky-top" style={{ top: '1rem' }}>
+
+                    {/* CONTACT */}
+                    <Card className="border-0 shadow-sm mb-4">
+                    <Card.Body>
+                        <h5 className="fw-semibold mb-3">Contact</h5>
+
+                        {contacts.phone_number ? (
+                        <p className="mb-2">
+                            <i className="bi bi-telephone me-2" />
+                            <a href={`tel:${contacts.phone_number}`}>
+                            {contacts.phone_number}
+                            </a>
+                        </p>
+                        ) : (
+                        <p className="text-muted small">No phone number</p>
+                        )}
+
+                        {contacts.facebook_link && (
+                        <p className="mb-2">
+                            <i className="bi bi-facebook me-2" />
+                            <a href={contacts.facebook_link} target="_blank">
+                            Facebook
+                            </a>
+                        </p>
+                        )}
+
+                        {contacts.instagram_link && (
+                        <p className="mb-0">
+                            <i className="bi bi-instagram me-2" />
+                            <a href={contacts.instagram_link} target="_blank">
+                            Instagram
+                            </a>
+                        </p>
+                        )}
+                    </Card.Body>
+                    </Card>
+
+                    {/* QUICK ACTIONS */}
+                    <Card className="border-0 shadow-sm">
+                    <Card.Body>
+                        <h5 className="fw-semibold mb-3">Quick Actions</h5>
+
+                        <div className="d-grid gap-2">
+                        <Button variant="outline-primary">
+                            <i className="bi bi-star me-1" />
+                            Add Review
+                        </Button>
+
+                        <Button variant="outline-secondary">
+                            <i className="bi bi-share me-1" />
+                            Share Store
+                        </Button>
+                        </div>
+                    </Card.Body>
+                    </Card>
+
+                </div>
+                </Col>
+            </Row>
+            </Container>
+        </div>
+    );
 }

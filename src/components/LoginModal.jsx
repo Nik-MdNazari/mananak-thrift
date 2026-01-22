@@ -8,6 +8,7 @@ import {
 import { auth } from '../firebase'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../components/ToastProvider'
 
 export default function LoginModal({ show, handleClose }) {
     const [key, setKey] = useState('login')
@@ -17,6 +18,7 @@ export default function LoginModal({ show, handleClose }) {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState('')
     const navigate = useNavigate()
+    const { showToast } = useToast()
 
     const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
@@ -42,12 +44,11 @@ export default function LoginModal({ show, handleClose }) {
         setError('')
 
         try {
-        await signInWithEmailAndPassword(auth, email, password)
-        handleClose()
+            await signInWithEmailAndPassword(auth, email, password)
+            showToast('Login successful 🎉', 'success')
+            handleClose()
         } catch (err) {
-            console.log('Firebase auth error:', err)
-            console.log('Error code:', err.code)
-            console.log('Error message:', err.message)
+
             setError(getAuthErrorMessage(err.code))
         }
     }
@@ -57,7 +58,7 @@ export default function LoginModal({ show, handleClose }) {
         setError('')
 
         if (password !== confirmPassword) {
-        setError('Passwords do not match')
+            setError('Passwords do not match')
         return
         }
 
@@ -78,6 +79,7 @@ export default function LoginModal({ show, handleClose }) {
                 username: username,
             })
 
+            showToast('Account created successfully 🎉', 'success')
             handleClose();
             navigate('/profile');
 

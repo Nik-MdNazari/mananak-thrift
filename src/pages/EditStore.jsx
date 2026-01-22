@@ -2,61 +2,75 @@ import { useEffect, useState } from 'react'
 import { Container } from 'react-bootstrap'
 import { useParams, useNavigate } from 'react-router-dom'
 import StoreForm from '../components/StoreForm.jsx'
+import { useToast } from '../components/ToastProvider.jsx'
 
 const API_BASE_URL = "https://c8429e85-0cc6-41db-8186-3ad2821bb10b-00-2o2qhf461pb8k.sisko.replit.dev";
 
 export default function EditStore() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+    const { id } = useParams()
+    const navigate = useNavigate()
 
-  const [store, setStore] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+    const [store, setStore] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const { showToast } = useToast()
 
-  useEffect(() => {
-  async function fetchStore() {
-    try {
-      const res = await fetch(`${API_BASE_URL}/stores/${id}`)
+    useEffect(() => {
+    async function fetchStore() {
+        try {
+        const res = await fetch(`${API_BASE_URL}/stores/${id}`)
 
-      if (!res.ok) {
-        throw new Error('Store not found')
-      }
+        if (!res.ok) {
+            throw new Error('Store not found')
+        }
 
-      const json = await res.json()
-      setStore(json.data) // or json, depending on your API
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+        const json = await res.json()
+        setStore(json.data) 
+        } catch (err) {
+        setError(err.message)
+        } finally {
+        setLoading(false)
+        }
     }
-  }
 
-  fetchStore()
-}, [id])
+    fetchStore()
+    }, [id])
 
 
-  async function handleUpdate(data) {
-    const res = await fetch(`${API_BASE_URL}/stores/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
+    async function handleUpdate(data) {
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/stores/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+            })
 
-    if (!res.ok) throw new Error('Failed to update store')
+            if (!res.ok) {
+                const errorData = await res.json()
+                console.error('Backend error:', errorData)
+                throw new Error('Failed to update store')
+            }
 
-    navigate(`/stores/${id}`)
-  }
+            navigate(`/stores/${id}`)
+            showToast('Store updated successfully')
 
-  if (loading) return <p>Loading...</p>
+        } catch (error) {
+            console.error('Error updating store:', error)
+            showToast('Failed to update store', 'danger')
+        }   
+    }
+    
+    if (loading) return <p>Loading...</p>
 
-  return (
-    <Container className="py-5">
-      <h2>Edit Store</h2>
-      <StoreForm
-        initialData={store}
-        onSubmit={handleUpdate}
-        submitLabel="Update Store"
-      />
-    </Container>
-  )
-}
+    return (
+        <Container className="py-5">
+        <h2>Edit Store</h2>
+        <StoreForm
+            initialData={store}
+            onSubmit={handleUpdate}
+            submitLabel="Update Store"
+        />
+        </Container>
+    )
+    }

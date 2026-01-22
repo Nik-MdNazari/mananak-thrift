@@ -45,51 +45,55 @@ export default function Home() {
     return (
         <div style={{ minHeight: '100vh', backgroundColor: theme.off, color: theme.dark }}>
 
-        <Container className="py-5">
-            <Row className="mb-4">
-                <Col className='text-center'>
-                    <div className='my-5'>
-                        <h1 style={{ color: theme.accent, fontWeight: 700, fontSize: '4rem' }}>Find Your Nearest Thrift Store</h1>
-                        <p className="lead" style={{ color: theme.dark, fontWeight: 300 }}>Explore thrift stores in Malaysia along with their locations, operating hours, contact, information, etc.</p>    
-                    </div>
+            <Container className="py-5">
+                <Row className="mb-4">
+                    <Col className='text-center'>
+                        <div className="my-5 text-center">
+                            <h1 className="fw-bold display-4 mb-3" style={{ color: theme.accent }}>
+                                Find Your Nearest Thrift Store
+                            </h1>
+                            <p className="lead text-muted mx-auto" style={{ maxWidth: 700 }}>
+                                Explore thrift stores in Malaysia with locations, hours, and contact info.
+                            </p>
+                        </div>
 
-                    {/* Search Bar */}
-                    <Form className="mb-4 align-items-center justify-content-center d-flex">
-                        <InputGroup style={{ width: '920px' }}>
-                            <Form.Control
-                                placeholder={'Search for thrift stores, locations, or address...'}
-                                value={search}
-                                onChange={(e) => {setSearch(e.target.value)}}
-                                aria-label="Search"
-                                style={{ borderColor: theme.off, backgroundColor: '#ffffff', fontSize: '1.2rem' }}
-                                className='px-3 py-3'
-                            />
-                            <Button
-                                onClick={() => {}}
-                                style={{ backgroundColor: theme.dark, borderColor: theme.dark, color: theme.off }}
-                            >
-                                <i className="bi bi-search me-1"></i>Search
-                            </Button>
-                        </InputGroup>
-                    </Form>
-                </Col>
-            </Row>
-
-            {/* Featured Thrift Store Section */}
-            <Row>
-                {stores.map(store => (
-                    <Col md={5} className="mb-4" key={store.id}>
-                        <ThriftStoreCard store={store} />
+                        {/* Search Bar */}
+                        <Form className="mb-4 align-items-center justify-content-center d-flex">
+                            <InputGroup className="w-100 w-md-75 w-lg-50 shadow-sm">
+                                <Form.Control
+                                    placeholder={'Search for thrift stores, locations, or address...'}
+                                    value={search}
+                                    onChange={(e) => {setSearch(e.target.value)}}
+                                    aria-label="Search"
+                                    style={{ borderColor: theme.off, backgroundColor: '#ffffff', fontSize: '1.2rem' }}
+                                    className='px-3 py-3'
+                                />
+                                <Button
+                                    onClick={() => {}}
+                                    style={{ backgroundColor: theme.dark, borderColor: theme.dark, color: theme.off }}
+                                >
+                                    <i className="bi bi-search me-1"></i>Search
+                                </Button>
+                            </InputGroup>
+                        </Form>
                     </Col>
-                ))}
-            </Row>
-        </Container>
+                </Row>
 
-        <footer className="py-4 text-center mt-auto" style={{ backgroundColor: theme.dark, color: theme.off }}>
-            <Container>
-                <small>&copy; {new Date().getFullYear()} ThriftFinder</small>
+                {/* Featured Thrift Store Section */}
+                <Row>
+                    {stores.map(store => (
+                        <Col xs={12} md={6} lg={4} className="mb-4" key={store.id}>
+                            <ThriftStoreCard store={store} />
+                        </Col>
+                    ))}
+                </Row>
             </Container>
-        </footer>
-    </div>
+
+            <footer className="py-4 text-center mt-auto" style={{ backgroundColor: theme.dark, color: theme.off }}>
+                <Container>
+                    <small>&copy; {new Date().getFullYear()} ThriftFinder</small>
+                </Container>
+            </footer>
+        </div>
     )
 }

@@ -14,15 +14,17 @@ export default function ThriftStoreCard({ store = {} }) {
     const navigate = useNavigate();
 
     return (
-        <Card style={{ border: `1px solid ${theme.mid}`, backgroundColor: theme.off }}>
+        <Card className="h-100 shadow-sm border-0 rounded-3 overflow-hidden">
+
             
             {/* Card Image */}
             {store.img ? (
-                <Card.Img 
-                    variant='top' 
-                    src={store.img} 
-                    alt={`${store.name}`} 
-                    style={{ objectFit: 'cover', height: 180 }} 
+                <Card.Img
+                    variant="top"
+                    src={store.img}
+                    alt={store.name}
+                    className="img-fluid"
+                    style={{ height: 200, objectFit: 'cover' }}
                 />
             ) : (
                 <div style={{ height: 180, backgroundColor: theme.light, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.dark, fontWeight: 600 }}>
@@ -61,16 +63,25 @@ export default function ThriftStoreCard({ store = {} }) {
                         <Badge bg="success" className='ms-4'>Open Now</Badge>
                     )}
                 </div>
-                    
 
-
-                <Button variant="primary" style={{ width: '300px', backgroundColor: theme.dark }} href={store.google_maps_link} className='me-3'>
-                    Show Direction
-                </Button>
-
-                <Button variant="secondary" onClick={() => {navigate(`/stores/${store.ts_id}`)}}>
-                    View Details
-                </Button>
+                { /* Buttons for directions and details */ }
+                <div className="d-grid gap-2 d-md-flex mt-4">
+                    <Button 
+                        className="flex-fill" 
+                        variant='outline-dark'
+                        href={store.google_maps_link}
+                        target="_blank"
+                    >
+                        Show Direction
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        className="flex-fill"
+                        onClick={() => navigate(`/stores/${store.ts_id}`)}
+                    >
+                        View Details
+                    </Button>
+                </div>
             </Card.Body>
         </Card>
     )
